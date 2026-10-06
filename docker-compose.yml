@@ -1,0 +1,43 @@
+services:
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - backend
+      - frontend
+
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend.env
+    volumes:
+      - static_data:/app/app/static
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+
+  db:
+    image: postgres:16
+    env_file:
+      - ./postgres.env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+
+volumes:
+  pg_data:
+  redis_data:
+  static_data:
